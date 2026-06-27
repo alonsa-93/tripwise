@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F5F7FA;
+  --foreground: #1F2937;
+  --brand-deep-blue: #102A43;
+  --brand-turquoise: #21C7B7;
+  --brand-orange: #FFB347;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-heebo);
+  --font-mono: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
