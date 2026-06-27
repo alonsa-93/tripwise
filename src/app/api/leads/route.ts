@@ -81,7 +81,13 @@ export async function POST(request: Request) {
 
     await emitEvent('lead.created', {
       lead_id: tripId,
+      trip_id: tripId,
       customer_id: customerId,
+      customer_name: name,
+      customer_email: email,
+      customer_phone: phone,
+      destination: destination || 'לא צוין',
+      trip_type: trip_type || 'unknown',
       source: 'website',
       consents: { contact: true, marketing: marketing_consent },
     });

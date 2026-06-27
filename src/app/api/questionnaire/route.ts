@@ -67,8 +67,18 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     });
 
+    const { data: tripWithCustomer } = await supabase
+      .from('trips')
+      .select('destination, trip_type, customer:customers(name, email, phone)')
+      .eq('id', trip_id)
+      .single();
+
     await emitEvent('questionnaire.completed', {
       trip_id,
+      customer_name: (tripWithCustomer?.customer as { name?: string } | null)?.name || 'לקוח',
+      customer_email: (tripWithCustomer?.customer as { email?: string } | null)?.email || '',
+      customer_phone: (tripWithCustomer?.customer as { phone?: string } | null)?.phone || '',
+      destination: tripWithCustomer?.destination || answers.destination || 'לא צוין',
       answers_version: 1,
     });
 
