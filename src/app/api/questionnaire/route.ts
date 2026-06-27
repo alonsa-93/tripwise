@@ -73,13 +73,26 @@ export async function POST(request: Request) {
       .eq('id', trip_id)
       .single();
 
+    const customerName = (tripWithCustomer?.customer as { name?: string } | null)?.name || 'לקוח';
+    const customerEmail = (tripWithCustomer?.customer as { email?: string } | null)?.email || '';
+    const customerPhone = (tripWithCustomer?.customer as { phone?: string } | null)?.phone || '';
+    const destination = tripWithCustomer?.destination || answers.destination || 'לא צוין';
+
     await emitEvent('questionnaire.completed', {
       trip_id,
-      customer_name: (tripWithCustomer?.customer as { name?: string } | null)?.name || 'לקוח',
-      customer_email: (tripWithCustomer?.customer as { email?: string } | null)?.email || '',
-      customer_phone: (tripWithCustomer?.customer as { phone?: string } | null)?.phone || '',
-      destination: tripWithCustomer?.destination || answers.destination || 'לא צוין',
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      destination,
       answers_version: 1,
+    });
+
+    await emitEvent('ai.agent.start', {
+      trip_id,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      destination,
+      answers,
     });
 
     return NextResponse.json({ success: true, questionnaire_id: questionnaireId });
