@@ -17,6 +17,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const isMeetingRequest = option_id === 'meeting_request';
     const newStatus = isMeetingRequest ? 'sales_call_needed' : 'customer_selected_option';
 
+    const { data: tripWithCustomer } = await supabase
+      .from('trips')
+      .select('destination, customer:customers(name, email, phone)')
+      .eq('id', proposal.trip_id)
+      .single();
+
     await supabase.from('trips').update({
       status: newStatus,
       updated_at: new Date().toISOString(),
@@ -37,15 +43,26 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       timestamp: new Date().toISOString(),
     });
 
+    const customer = tripWithCustomer?.customer as { name?: string; email?: string; phone?: string } | null;
+    const customerName = customer?.name || 'לקוח';
+    const customerEmail = customer?.email || '';
+    const destination = tripWithCustomer?.destination || 'לא צוין';
+
     if (isMeetingRequest) {
       await emitEvent('meeting.slot.selected', {
         trip_id: proposal.trip_id,
         slot_id: 'pending',
+        customer_name: customerName,
+        customer_email: customerEmail,
+        selected_slot: 'pending',
       });
     } else {
       await emitEvent('customer.option.selected', {
         trip_id: proposal.trip_id,
         option_id,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        destination,
       });
     }
 

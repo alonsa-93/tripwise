@@ -51,7 +51,14 @@ export default function ReviewPage() {
       after: { trip_id: trip.id },
       timestamp: new Date().toISOString(),
     });
-    await emitEvent('proposal.approved', { trip_id: trip.id, approved_by: 'admin' });
+    await emitEvent('proposal.approved', {
+      trip_id: trip.id,
+      proposal_id: proposalId,
+      approved_by: 'admin',
+      customer_name: trip.customer?.name || 'לקוח',
+      customer_email: trip.customer?.email || '',
+      destination: trip.destination || 'לא צוין',
+    });
     router.push(`/admin/leads/${trip.id}`);
   }
 

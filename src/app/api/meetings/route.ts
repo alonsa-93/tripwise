@@ -42,9 +42,20 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     });
 
+    const { data: tripWithCustomer } = await supabase
+      .from('trips')
+      .select('customer:customers(name, email)')
+      .eq('id', trip_id)
+      .single();
+
+    const customer = tripWithCustomer?.customer as { name?: string; email?: string } | null;
+
     await emitEvent('meeting.slot.selected', {
       trip_id,
       slot_id: slotId,
+      customer_name: customer?.name || 'לקוח',
+      customer_email: customer?.email || '',
+      selected_slot,
     });
 
     return NextResponse.json({ success: true, slot_id: slotId });
