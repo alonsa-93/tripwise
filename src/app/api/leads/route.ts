@@ -23,21 +23,27 @@ export async function POST(request: Request) {
     }
 
     const supabase = getServiceClient();
-    const customerId = uuidv4();
     const tripId = uuidv4();
 
-    const { error: customerError } = await supabase.from('customers').insert({
-      id: customerId,
-      name,
-      email,
-      phone,
-      marketing_consent: marketing_consent || false,
-      privacy_accepted_at: new Date().toISOString(),
-    });
-
-    if (customerError) {
-      console.error('Customer creation error:', customerError);
-      return NextResponse.json({ error: 'שגיאה ביצירת רשומת לקוח' }, { status: 500 });
+    // Find or create customer by email
+    let customerId: string;
+    const { data: existing } = await supabase.from('customers').select('id').eq('email', email).single();
+    if (existing) {
+      customerId = existing.id;
+    } else {
+      customerId = uuidv4();
+      const { error: customerError } = await supabase.from('customers').insert({
+        id: customerId,
+        name,
+        email,
+        phone,
+        marketing_consent: marketing_consent || false,
+        privacy_accepted_at: new Date().toISOString(),
+      });
+      if (customerError) {
+        console.error('Customer creation error:', customerError);
+        return NextResponse.json({ error: 'שגיאה ביצירת רשומת לקוח' }, { status: 500 });
+      }
     }
 
     const { error: tripError } = await supabase.from('trips').insert({
