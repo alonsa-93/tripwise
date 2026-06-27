@@ -9,22 +9,21 @@ type EventType =
   | 'status.changed'
   | 'agent.failed';
 
-interface AutomationEvent {
-  event_type: EventType;
-  payload: Record<string, unknown>;
-  timestamp: string;
-}
+const N8N_BASE = 'https://alonsab.app.n8n.cloud/webhook';
+
+const WEBHOOK_MAP: Partial<Record<EventType, string>> = {
+  'lead.created': `${N8N_BASE}/tripwise/lead-created`,
+  'questionnaire.completed': `${N8N_BASE}/tripwise/questionnaire-completed`,
+  'ai.draft.ready': `${N8N_BASE}/tripwise/ai-draft-ready`,
+  'proposal.approved': `${N8N_BASE}/tripwise/proposal-approved`,
+  'customer.option.selected': `${N8N_BASE}/tripwise/customer-option-selected`,
+  'meeting.slot.selected': `${N8N_BASE}/tripwise/meeting-scheduled`,
+};
 
 export async function emitEvent(eventType: EventType, payload: Record<string, unknown>): Promise<void> {
-  const event: AutomationEvent = {
-    event_type: eventType,
-    payload,
-    timestamp: new Date().toISOString(),
-  };
-
-  const webhookUrl = process.env.AUTOMATION_WEBHOOK_URL;
+  const webhookUrl = WEBHOOK_MAP[eventType];
   if (!webhookUrl) {
-    console.log('[AutomationAdapter] No webhook URL configured, logging event:', event);
+    console.log('[AutomationAdapter] No webhook mapped for event:', eventType, payload);
     return;
   }
 
@@ -32,13 +31,13 @@ export async function emitEvent(eventType: EventType, payload: Record<string, un
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(event),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      console.error('[AutomationAdapter] Webhook failed:', response.status);
+      console.error('[AutomationAdapter] Webhook failed:', eventType, response.status);
     }
   } catch (error) {
-    console.error('[AutomationAdapter] Failed to emit event:', error);
+    console.error('[AutomationAdapter] Failed to emit event:', eventType, error);
   }
 }
