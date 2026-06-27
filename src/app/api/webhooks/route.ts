@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServiceClient } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid event' }, { status: 400 });
     }
 
+    const supabase = getServiceClient();
     await supabase.from('audit_logs').insert({
       id: uuidv4(),
       actor_type: 'automation',

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServiceClient } from '@/lib/supabase';
 import { emitEvent } from '@/lib/automation-adapter';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,6 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'חסרים נתונים' }, { status: 400 });
     }
 
+    const supabase = getServiceClient();
     const slotId = uuidv4();
     const { error } = await supabase.from('meeting_slots').insert({
       id: slotId,

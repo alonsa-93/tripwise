@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getServiceClient } from '@/lib/supabase';
 import { emitEvent } from '@/lib/automation-adapter';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -8,6 +8,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { id: proposalId } = await params;
     const { option_id } = await request.json();
 
+    const supabase = getServiceClient();
     const { data: proposal } = await supabase.from('proposals').select('*').eq('id', proposalId).single();
     if (!proposal) {
       return NextResponse.json({ error: 'הצעה לא נמצאה' }, { status: 404 });
